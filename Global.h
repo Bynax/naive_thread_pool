@@ -7,9 +7,9 @@
 #ifndef NAIVE_THREAD_POOL_GLOBAL_H
 #define NAIVE_THREAD_POOL_GLOBAL_H
 
-const int DEFAULT_POOL_SIZE = 10;
-const int STARTED = 0;
-const int STOPPED = 1;
+const int DEFAULT_POOL_SIZE = 10; // 定义默认线程池数量
+const int STARTED = 0; // 定义状态
+const int STOPPED = 1; // 定义状态
 
 
 #endif //NAIVE_THREAD_POOL_GLOBAL_H

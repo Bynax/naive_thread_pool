@@ -7,11 +7,11 @@
 #include "ThreadPool.h"
 
 ThreadPool::ThreadPool() :
-        m_pool_size(DEFAULT_POOL_SIZE) {
+        m_pool_size(DEFAULT_POOL_SIZE) { // 构造函数，默认线程池数量为为Global中的
 }
 
 ThreadPool::ThreadPool(int pool_size) :
-        m_pool_size(pool_size) {
+        m_pool_size(pool_size) { // 自定义线程池数量
 }
 
 ThreadPool::~ThreadPool() {
@@ -32,17 +32,17 @@ extern "C" {
 int ThreadPool::initial_threadpool() {
 
     m_pool_state = STARTED;
-    int ret = -1;
     for (int i = 0; i < m_pool_size; i++) {
         pthread_t tid;
-        ret = pthread_create(&tid, NULL,start_thread,(void*) this);
+        // 四个参数分别pthread_t对象，线程属性，线程执行的方法以及方法说需要的参数
+        int ret = pthread_create(&tid, NULL,start_thread,(void*) this);
         if(ret != 0){
             cerr<<"pthread_create fialed: "<<ret<<"\n";
             return -1;
         }
-        m_threads.push_back(tid);
-        cout<<"threads creates by the thread pool\n";
+        m_threads.push_back(tid); // 线程存储在vector中
     }
+    cout<<"threads creates by the thread pool\n";
     return 0;
 }
 
@@ -56,6 +56,9 @@ int ThreadPool::destroy_threadpool() {
     int ret = -1;
     for(int i = 0; i < m_pool_size; i++){
         void* result;
+        // pthread_join suspends execution of the calling thread until the target thread terminates.
+        // 第二个参数中是存储thread退出时的返回值
+        //
         ret = pthread_join(m_threads[i],&result);
         cout<<"pthread_join returned "<< ret <<":"<<
         strerror(errno)<<"\n";
