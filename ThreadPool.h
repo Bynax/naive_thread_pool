@@ -31,13 +31,13 @@ public:
     int add_task(Task* task);
 
 private:
-    int m_pool_size;
-    Mutex m_task_mutex;
-    CondVar m_task_cond_var;
-    vector<pthread_t> m_threads;
-    deque<Task*> m_tasks;
+    int m_pool_size; // 线程池数量
+    Mutex m_task_mutex; // 互斥锁，用来保护条件变量
+    CondVar m_task_cond_var; // 条件变量，同步任务队列
+    vector<pthread_t> m_threads; // 存放thread的容器
+    deque<Task*> m_tasks; // 任务队列
 
-    volatile int m_pool_state;
+    volatile int m_pool_state; // 线程池的状态 start or stop，因为要保证各个线程可以看到最新的状态，因此使用volatile
 };
 
 

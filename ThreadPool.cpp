@@ -51,6 +51,8 @@ int ThreadPool::destroy_threadpool() {
     m_pool_state = STOPPED;
     m_task_mutex.unlock();
     cout<<"Broadcasting STOP signal to all threads\n";
+    // 因为条件变量wait的条件有两个一个是任务队列不为空一个是线程池状态为started
+    // 因此当其中一个条件改变的时候需要进行唤醒操作，而这个条件是对所有线程而言的，因此使用broadcast操作
     m_task_cond_var.broadcast();
 
     int ret = -1;
@@ -62,26 +64,26 @@ int ThreadPool::destroy_threadpool() {
         ret = pthread_join(m_threads[i],&result);
         cout<<"pthread_join returned "<< ret <<":"<<
         strerror(errno)<<"\n";
-        m_task_cond_var.broadcast();
+//        m_task_cond_var.broadcast();
     }
     cout<<m_pool_size<<" threads exited from the thread pool\n";
     return 0;
 }
 
-void *ThreadPool::execute_thread() {
-    Task* task = NULL;
+void* ThreadPool::execute_thread() {
+    Task* task = nullptr;
     cout<<"Starting thread "<<pthread_self()<<"\n";
     while(true){
         cout<<"Locking "<<pthread_self()<<"\n";
-        m_task_mutex.lock();
+        m_task_mutex.lock(); // 因为在wait之前要求mute必须要上锁
 
         while((m_pool_state != STOPPED) &&
                 (m_tasks.empty())){
             cout<<"Unlocking and waiting: "<<pthread_self()<<"\n";
-            m_task_cond_var.wait(m_task_mutex.get_mutex_ptr());
+            m_task_cond_var.wait(m_task_mutex.get_mutex_ptr()); // 条件变量要进行循环判断
             cout<<"Signaled and locking: "<<pthread_self()<<"\n";
         }
-        if(m_pool_state == STOPPED){
+        if(m_pool_state == STOPPED){ // 如果线程池的状态是STOPPED的话直接退出即可
             cout<<"Unlocking and exiting: "<<pthread_self()<<"\n";
             m_task_mutex.unlock();
             pthread_exit(NULL);
